@@ -1,3 +1,5 @@
+var id_token = null;
+
 function onSignIn(googleUser) {
   // Useful data for your client-side scripts:
   var profile = googleUser.getBasicProfile();
@@ -5,7 +7,8 @@ function onSignIn(googleUser) {
   console.log('Full Name: ' + profile.getName());
 
   // The ID token you need to pass to your backend:
-  var id_token = googleUser.getAuthResponse().id_token;
+  id_token = googleUser.getAuthResponse().id_token;
+  console.log("GTOKEN = " + id_token);
   buildApp();
 };
 
@@ -16,7 +19,25 @@ function buildApp() {
   // TODO: backend.
   createMessage("THIS IS A TEST");
   buildLogOff();
+};
+
+function callAPI() {
+  // Check id_token
+  let xhr = new XMLHttpRequest();
+  xhr.open('GET', 'http://localhost:3000/hello');
+  xhr.setRequestHeader("Content-Type", "text/plain");
+  xhr.setRequestHeader("X-Auth-Code", id_token);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      let obj = JSON.parse(xhr.response);
+      console.log(obj)
+    } else {
+      alert("failed");
+    }
+  }
+  xhr.send();
 }
+
 // Hides or show the signin button,
 // if state is true hide, otherwise show.
 function toggleSignInButton(state) {
@@ -58,5 +79,6 @@ function logOff() {
     }
     // Show loginButton
     toggleSignInButton(false);
+    id_token = null;
   })
 }
